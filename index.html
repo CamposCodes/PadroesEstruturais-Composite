@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Cardápio - Composite Pattern</title>
+    <style>
+        :root {
+            --bg: #f6f8fa;
+            --surface: #ffffff;
+            --muted: #6a737d;
+            --border: #e1e4e8;
+            --accent: #0366d6;
+            --success: #28a745;
+            --shadow: 0 1px 2px rgba(27,31,35,0.04), 0 8px 24px rgba(27,31,35,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            background-color: var(--bg);
+            color: #24292e;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 32px auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            margin: 0 0 8px 0;
+            color: #0b2d4a;
+        }
+
+        .subtitle {
+            font-size: 0.95em;
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            color: #0b2d4a;
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            font-size: 0.95rem;
+            color: #0b2d4a;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .stat {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 14px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #ffffff, #fbfdff);
+            border: 1px solid var(--border);
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            background: rgba(3, 102, 214, 0.08);
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .stat-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-number {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #092a4a;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        button.add {
+            background: var(--accent);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        button.add-bulk {
+            background: #2ea44f;
+            color: #fff;
+            border-color: transparent;
+        }
+
+        button.clear {
+            background: transparent;
+        }
+
+        button:hover {
+            opacity: 0.95;
+        }
+
+        .menu {
+            max-height: 400px;
+            overflow-y: auto;
+            background: linear-gradient(180deg, #fff, #fcfeff);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .menu-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: #f0f6fc;
+            border-color: var(--border);
+        }
+
+        .menu-item.section {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #0366d6;
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+
+        .menu-item.product {
+            padding-left: 40px;
+            font-size: 0.95rem;
+        }
+
+        .menu-item.combo {
+            background-color: #fff7ec;
+            border-color: #ffc53d;
+            padding-left: 20px;
+            color: #b8860b;
+            font-weight: 600;
+        }
+
+        .menu-icon {
+            font-size: 1.2rem;
+            min-width: 24px;
+        }
+
+        .menu-content {
+            flex: 1;
+        }
+
+        .menu-name {
+            font-weight: 600;
+            color: #0b2d4a;
+        }
+
+        .menu-price {
+            color: var(--success);
+            font-weight: 700;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .feature-card {
+            background: linear-gradient(180deg, #fff, #fcfeff);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            transition: transform 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+        }
+
+        .feature-icon {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+
+        .feature-card h3 {
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .feature-card p {
+            color: var(--muted);
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+
+        .benefit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .benefit-item {
+            background: linear-gradient(180deg, #fff, #fcfeff);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--success);
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .benefit-item h4 {
+            color: #0366d6;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .benefit-item p {
+            color: var(--muted);
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+
+        .benefit-item.bad {
+            border-left-color: #d1242f;
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: var(--accent);
+            line-height: 1.6;
+        }
+
+        .code-line {
+            display: block;
+            padding: 4px 0;
+        }
+
+        .code-keyword {
+            color: #d1242f;
+        }
+
+        .code-type {
+            color: var(--accent);
+        }
+
+        .code-string {
+            color: #24a24a;
+        }
+
+        .code-comment {
+            color: var(--muted);
+        }
+
+        .demo-output {
+            background: #f6f8fa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #0b2d4a;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        ul {
+            padding-left: 18px;
+        }
+
+        ul li {
+            margin-bottom: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.85em;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 800px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .menu-item {
+                flex-direction: column;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 Sistema Cardápio - Composite Pattern</h1>
+            <p class="subtitle">Demonstração Interativa do Padrão Composite</p>
+        </header>
+
+        <!-- Estatísticas -->
+        <div class="stats" role="region" aria-label="Estatísticas do Composite">
+            <div class="stat" id="sectionsCount" aria-live="polite">
+                <div class="stat-icon">📂</div>
+                <div class="stat-content">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Seções Criadas</div>
+                </div>
+            </div>
+
+            <div class="stat" id="productsCount" aria-live="polite">
+                <div class="stat-icon">🛍️</div>
+                <div class="stat-content">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Produtos no Cardápio</div>
+                </div>
+            </div>
+
+            <div class="stat" id="totalPrice" aria-live="polite">
+                <div class="stat-icon">💰</div>
+                <div class="stat-content">
+                    <div class="stat-number">R$ 0,00</div>
+                    <div class="stat-label">Preço Total</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="card">
+            <h2>Construir Cardápio</h2>
+            <div class="buttons">
+                <button class="add" onclick="addRandomMenu()">+ Adicionar Seção</button>
+                <button class="add-bulk" onclick="buildFullMenu()">Cardápio Completo</button>
+                <button class="clear" onclick="clearMenu()">Limpar</button>
+            </div>
+        </div>
+
+        <!-- Visualização do Cardápio -->
+        <div class="card">
+            <h2>Cardápio Dinâmico (<span id="itemCount">0</span> itens)</h2>
+            <div class="menu" id="menuContainer">Clique em "Adicionar Seção" ou "Cardápio Completo" para começar.</div>
+        </div>
+
+        <!-- Explicação -->
+        <div class="card">
+            <h2>🎓 Como Funciona o Composite</h2>
+            <ul>
+                <li><strong>Interface Comum:</strong> ItemCardapio define o contrato para todos</li>
+                <li><strong>Leaf (Folha):</strong> Produto - objeto simples sem filhos</li>
+                <li><strong>Composite (Galho):</strong> SecaoCardapio - pode conter itens ou outras seções</li>
+                <li><strong>Recursão Natural:</strong> Estruturas aninhadas funcionam automaticamente</li>
+                <li><strong>Sem Type Checking:</strong> Mesma interface para todos os tipos</li>
+            </ul>
+        </div>
+
+        <!-- Vantagens -->
+        <div class="card">
+            <h2>✨ Principais Vantagens</h2>
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Simplicidade</h3>
+                    <p>Trata folhas e galhos com a mesma interface</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Recursão Natural</h3>
+                    <p>Estruturas aninhadas funcionam automaticamente</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">➕</div>
+                    <h3>Flexibilidade</h3>
+                    <p>Adicione novos tipos sem alterar código</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏗️</div>
+                    <h3>Profundidade Arbitrária</h3>
+                    <p>Estruturas de qualquer profundidade</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exemplo de Código -->
+        <div class="card">
+            <h2>💻 Exemplo de Código</h2>
+            <p><strong>Criando produtos e seções:</strong></p>
+            <div class="demo-output"><code>
+<span class="code-comment">// Criar produtos (folhas)</span><br>
+<span class="code-line"><span class="code-keyword">const</span> cafe = <span class="code-keyword">new</span> Produto(<span class="code-string">"Café"</span>, 5.00, 10);</span>
+<span class="code-line"><span class="code-keyword">const</span> bolo = <span class="code-keyword">new</span> Produto(<span class="code-string">"Bolo"</span>, 8.00, 300);</span>
+
+<span class="code-comment">// Criar seção (composite)</span><br>
+<span class="code-line"><span class="code-keyword">const</span> cafeDaManha = <span class="code-keyword">new</span> SecaoCardapio(<span class="code-string">"Café da Manhã"</span>, true);</span>
+<span class="code-line">cafeDaManha.addItem(cafe);</span>
+<span class="code-line">cafeDaManha.addItem(bolo);</span>
+
+<span class="code-comment">// Resultado: composição automática com desconto de 10%</span><br>
+<span class="code-line"><span class="code-keyword">double</span> preco = cafeDaManha.getPreco(); <span class="code-comment">// R$ 11,70</span></span>
+            </code></div>
+        </div>
+
+        <!-- Comparação -->
+        <div class="card">
+            <h2>⚖️ Composite vs. Sem Padrão</h2>
+            <div class="benefit-grid">
+                <div class="benefit-item bad">
+                    <h4>❌ Sem Padrão</h4>
+                    <p><strong>Problema:</strong> Precisa saber o tipo para processar</p>
+                    <code style="display: block; margin-top: 8px;">if (item instanceof Produto) { ... }
+else if (item instanceof SecaoCardapio) { ... }</code>
+                </div>
+                <div class="benefit-item">
+                    <h4>✅ Com Composite</h4>
+                    <p><strong>Solução:</strong> Mesma interface para todos</p>
+                    <code style="display: block; margin-top: 8px;">ItemCardapio item = ...;
+double preco = item.getPreco();</code>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>Padrão Composite</strong> - Demonstração Interativa</p>
+            <p>Implementado em Java | Visualizado em HTML/CSS/JavaScript</p>
+        </footer>
+    </div>
+
+    <script>
+        const menuContainer = document.getElementById('menuContainer');
+        const sectionsCountDiv = document.getElementById('sectionsCount');
+        const productsCountDiv = document.getElementById('productsCount');
+        const totalPriceDiv = document.getElementById('totalPrice');
+        const itemCountSpan = document.getElementById('itemCount');
+
+        let sections = [];
+        let totalItems = 0;
+
+        const products = [
+            { id: 'exp', name: 'Café Expresso', category: 'Bebida', price: 5.00, icon: '☕' },
+            { id: 'cap', name: 'Cappuccino', category: 'Bebida', price: 6.00, icon: '☕' },
+            { id: 'lat', name: 'Latte', category: 'Bebida', price: 6.50, icon: '☕' },
+            { id: 'choc', name: 'Chocolate Quente', category: 'Bebida', price: 7.00, icon: '☕' },
+            { id: 'cox', name: 'Coxinha', category: 'Salgado', price: 6.50, icon: '🍲' },
+            { id: 'past', name: 'Pastel', category: 'Salgado', price: 7.00, icon: '🍲' },
+            { id: 'sandu', name: 'Sanduíche', category: 'Comida', price: 12.00, icon: '🥪' },
+            { id: 'bolo', name: 'Bolo Chocolate', category: 'Sobremesa', price: 8.00, icon: '🍰' },
+            { id: 'sorv', name: 'Sorvete', category: 'Sobremesa', price: 8.50, icon: '🍨' }
+        ];
+
+        function addRandomMenu() {
+            const categories = ['Bebidas Quentes', 'Bebidas Geladas', 'Salgados', 'Sobremesas'];
+            const category = categories[Math.floor(Math.random() * categories.length)];
+            
+            const itemsInSection = Math.floor(Math.random() * 3) + 2;
+            const sectionProducts = [];
+            
+            for (let i = 0; i < itemsInSection; i++) {
+                const product = products[Math.floor(Math.random() * products.length)];
+                sectionProducts.push(product);
+            }
+
+            sections.push({
+                name: category,
+                products: sectionProducts,
+                isCombo: Math.random() > 0.7
+            });
+
+            totalItems += itemsInSection;
+            updateDisplay();
+        }
+
+        function buildFullMenu() {
+            sections = [
+                {
+                    name: 'Bebidas Quentes',
+                    products: [products[0], products[1], products[2], products[3]],
+                    isCombo: false
+                },
+                {
+                    name: 'Bebidas Geladas',
+                    products: [products[0], products[2]],
+                    isCombo: false
+                },
+                {
+                    name: 'Salgados',
+                    products: [products[4], products[5], products[6]],
+                    isCombo: false
+                },
+                {
+                    name: 'Sobremesas',
+                    products: [products[7], products[8]],
+                    isCombo: false
+                },
+                {
+                    name: 'Combo Café da Manhã',
+                    products: [products[0], products[7]],
+                    isCombo: true
+                }
+            ];
+
+            totalItems = sections.reduce((sum, s) => sum + s.products.length, 0);
+            updateDisplay();
+        }
+
+        function calculatePrice(products, isCombo) {
+            let total = products.reduce((sum, p) => sum + p.price, 0);
+            if (isCombo) {
+                total = total * 0.9;
+            }
+            return total;
+        }
+
+        function updateDisplay() {
+            menuContainer.innerHTML = '';
+
+            if (sections.length === 0) {
+                menuContainer.innerHTML = 'Clique em "Adicionar Seção" ou "Cardápio Completo" para começar.';
+                updateStats();
+                return;
+            }
+
+            sections.forEach(section => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = `menu-item ${section.isCombo ? 'combo' : 'section'}`;
+                
+                const icon = section.isCombo ? '🎁' : '📂';
+                const label = section.isCombo ? `Combo: ${section.name}` : section.name;
+                const price = calculatePrice(section.products, section.isCombo);
+
+                sectionDiv.innerHTML = `
+                    <span class="menu-icon">${icon}</span>
+                    <div class="menu-content">
+                        <div class="menu-name">${label}</div>
+                    </div>
+                    <div class="menu-price">R$ ${price.toFixed(2).replace('.', ',')}</div>
+                `;
+                menuContainer.appendChild(sectionDiv);
+
+                section.products.forEach(product => {
+                    const productDiv = document.createElement('div');
+                    productDiv.className = 'menu-item product';
+                    
+                    productDiv.innerHTML = `
+                        <span class="menu-icon">${product.icon}</span>
+                        <div class="menu-content">
+                            <div class="menu-name">${product.name}</div>
+                        </div>
+                        <div class="menu-price">R$ ${product.price.toFixed(2).replace('.', ',')}</div>
+                    `;
+                    menuContainer.appendChild(productDiv);
+                });
+            });
+
+            updateStats();
+        }
+
+        function updateStats() {
+            const setStat = (el, value, suffix = '') => {
+                const num = el.querySelector('.stat-number');
+                if (num) num.innerText = value + (suffix || '');
+            };
+
+            const totalPrice = sections.reduce((sum, s) => {
+                return sum + calculatePrice(s.products, s.isCombo);
+            }, 0);
+
+            setStat(sectionsCountDiv, sections.length);
+            setStat(productsCountDiv, totalItems);
+            setStat(totalPriceDiv, totalPrice.toFixed(2).replace('.', ','), '');
+            itemCountSpan.innerText = totalItems;
+        }
+
+        function clearMenu() {
+            sections = [];
+            totalItems = 0;
+            updateDisplay();
+        }
+    </script>
+</body>
+</html>
