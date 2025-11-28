@@ -35,7 +35,7 @@ Implementação do padrão **Composite** aplicada a um sistema de cardápio de c
 - Visualização clara de como estruturas recursivas podem ser simplificadas
 - Tratamento uniforme de itens simples e complexos sem type casting
 
-Também há uma interface de demonstração interativa inclusa: [Interface de Demonstração](./padraoComposite.html)
+Também há uma interface de demonstração interativa inclusa: [Interface de Demonstração](https://camposcodes.github.io/PadroesEstruturais-Composite/)
 <p align="center">
 	<img src="./screenshot.png" alt="Captura da interface - Demonstração Composite" width="900" />
 </p>
@@ -145,14 +145,13 @@ mvn package
 ```
 
 ### Interface de Demonstração Interativa
-- Abra o arquivo `padraoComposite.html` no navegador para visualizar a demonstração interativa do padrão
+- Abra a [demonstração interativa](https://camposcodes.github.io/PadroesEstruturais-Composite/) para visualizar o padrão em ação
 - A interface apresenta:
-  - Estrutura em árvore do cardápio
-  - Comparação visual com/sem o padrão
-  - Diagrama UML das classes
-  - Exemplos práticos de código
-  - Demos interativas de diferentes cenários
-  - Análise de vantagens e casos de uso
+  - Construção interativa de cardápios
+  - Cálculo automático de preços com desconto em combos
+  - Visualização em tempo real da hierarquia
+  - Estatísticas dinâmicas
+  - Exemplos práticos de uso
 
 ### Testes Inclusos
 1. **deveRetornarCardapioCompletoDoBar** - Valida estrutura completa com múltiplos níveis
